@@ -1,0 +1,42 @@
+{
+    "name": "tictic",
+    "version": "0.0.1",
+    "description": "Simple, well-crafted Node.js SDK for TicTic WhatsApp API",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "whatsapp",
+        "api",
+        "tictic",
+        "sdk",
+        "messaging",
+        "brazil"
+    ],
+    "author": "TicTic Team",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tictic-dev/tictic-node"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "qrcode-terminal": "^0.12.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "@types/qrcode-terminal": "^0.12.0",
+        "typescript": "^5.3.3"
+    }
+}
