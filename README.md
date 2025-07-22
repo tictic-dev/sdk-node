@@ -1,81 +1,137 @@
 # @tictic/node
 
-Dead simple WhatsApp messaging for Node.js. No setup drama, just works.
+SDK simples para envio de mensagens WhatsApp em Node.js.
 
 ```bash
 npm install @tictic/node
 ```
 
-## Quick Start (Literally 30 seconds)
+## Início Rápido
+
+```javascript
+import TicTic from "@tictic/node";
+
+const tictic = new TicTic(); // Usa TICTIC_API_KEY da variável de ambiente
+
+// Conecta se necessário
+if (!(await tictic.isReady())) {
+  await tictic.connect(); // Mostra QR code
+}
+
+// Envia mensagem
+await tictic.sendText("5511999887766", "Olá! 👋");
+```
+
+## Obtendo sua Chave de API
+
+```javascript
+// 1. Solicita código de verificação
+await TicTic.signup("5511999887766");
+
+// 2. Verifique seu WhatsApp e insira o código
+const apiKey = await TicTic.verify("5511999887766", "123456");
+
+// 3. Salve a chave
+process.env.TICTIC_API_KEY = apiKey;
+```
+
+## API Completa
+
+### Construtor
+
+- `new TicTic(apiKey?)` - Chave da API ou usa `TICTIC_API_KEY` da variável de ambiente
+
+### Mensagens
+
+- `tictic.sendText(para, mensagem)` - Envia uma mensagem WhatsApp
+- `tictic.isReady()` - Verifica se está conectado ao WhatsApp
+- `tictic.connect()` - Conecta ao WhatsApp (mostra QR code)
+
+### Conta
+
+- `TicTic.signup(telefone)` - Solicita código de verificação
+- `TicTic.verify(telefone, codigo)` - Completa cadastro, retorna chave da API
+- `tictic.getUsage()` - Verifica uso e limites
+
+## Variáveis de Ambiente
+
+```bash
+TICTIC_API_KEY=tk_xxxxxx      # Sua chave de API
+```
+
+## Tratamento de Erros
+
+```javascript
+try {
+  await tictic.sendText("5511999887766", "Olá!");
+} catch (error) {
+  if (error.name === "TicTicError") {
+    console.log(`Erro ${error.statusCode}: ${error.message}`);
+  }
+}
+```
+
+## Requisitos
+
+- Node.js 18+
+- Terminal com suporte a Unicode (para QR codes)
+
+---
+
+## English Documentation
+
+### Simple WhatsApp messaging for Node.js
+
+```bash
+npm install @tictic/node
+```
+
+### Quick Start
 
 ```javascript
 import TicTic from "@tictic/node";
 
 const tictic = new TicTic(); // Uses TICTIC_API_KEY env var
 
-// This single line handles EVERYTHING
-await tictic.quickSend("5511999887766", "Hello! 👋");
+// Connect if needed
+if (!(await tictic.isReady())) {
+  await tictic.connect(); // Shows QR code
+}
+
+// Send message
+await tictic.sendText("5511999887766", "Hello! 👋");
 ```
 
-That's it. The SDK handles session management, QR codes, waiting - everything.
-
-## Getting Your API Key
-
-### Option 1: Interactive Signup (Recommended)
-
-```bash
-npx @tictic/node signup
-```
-
-This walks you through the entire process with QR codes and everything.
-
-### Option 2: Manual Signup
+### Getting Your API Key
 
 ```javascript
-// 1. Request code
-await TicTic.requestVerification("5511999887766");
+// 1. Request verification code
+await TicTic.signup("5511999887766");
 
-// 2. User gets code via WhatsApp, then:
-const { apiKey } = await TicTic.verifyAndCreateAccount(
-  "5511999887766",
-  "123456"
-);
+// 2. Check your WhatsApp, then verify with the code
+const apiKey = await TicTic.verify("5511999887766", "123456");
 
-// 3. Save the API key
+// 3. Save the key
 process.env.TICTIC_API_KEY = apiKey;
 ```
 
-## Real-World Examples
+### Complete API
 
-### Send and Check Usage
+**Constructor**
 
-```javascript
-const tictic = new TicTic();
+- `new TicTic(apiKey?)` - API key or uses `TICTIC_API_KEY` env var
 
-const result = await tictic.sendText("5511999887766", "Hello!");
+**Messaging**
 
-// The API returns usage info with every message
-if (result.usage) {
-  console.log(`Used ${result.usage.used} of ${result.usage.limit} messages`);
-  console.log(`${result.usage.remaining} remaining this month`);
-}
-```
+- `tictic.sendText(to, message)` - Send a WhatsApp message
+- `tictic.isReady()` - Check if connected to WhatsApp
+- `tictic.connect()` - Connect to WhatsApp (shows QR code)
 
-### Manual Session Management
+**Account**
 
-```javascript
-// Sometimes you want more control
-const tictic = new TicTic();
-
-// Create session with QR code
-await tictic.createSession(); // Shows QR in terminal
-
-// Wait for user to scan
-await tictic.waitForSession({ showProgress: true });
-
-// Now send messages
-await tictic.sendText("5511999887766", "Ready! ✓✓");
-```
+- `TicTic.signup(phone)` - Request verification code
+- `TicTic.verify(phone, code)` - Complete signup, returns API key
+- `tictic.getUsage()` - Check usage and limits
 
 ### Error Handling
 
@@ -84,92 +140,12 @@ try {
   await tictic.sendText("5511999887766", "Hello!");
 } catch (error) {
   if (error.name === "TicTicError") {
-    console.log(`API Error (${error.statusCode}): ${error.message}`);
-
-    if (error.statusCode === 429) {
-      // Rate limited or quota exceeded
-      const usage = await tictic.getUsage();
-      console.log("Current usage:", usage);
-    }
+    console.log(`Error ${error.statusCode}: ${error.message}`);
   }
 }
 ```
 
-### Debug Mode
-
-```javascript
-// See what's happening under the hood
-const tictic = new TicTic({ debug: true });
-```
-
-## Complete API
-
-### `new TicTic(config?)`
-
-- `config.apiKey` - API key (or use `TICTIC_API_KEY` env)
-- `config.baseUrl` - API URL (default: `https://api.tictic.dev`)
-- `config.debug` - Enable debug logging
-
-### Messaging
-
-- `tictic.send({ to, message })` - Send message with full control
-- `tictic.sendText(to, text)` - Simple text message
-- `tictic.quickSend(to, text)` - Send with automatic session handling
-
-### Sessions
-
-- `tictic.createSession(showQR?)` - Create session (shows QR by default)
-- `tictic.getSession()` - Check session status
-- `tictic.waitForSession(options?)` - Wait for QR scan
-
-### Account
-
-- `TicTic.requestVerification(phone)` - Start signup
-- `TicTic.verifyAndCreateAccount(phone, code)` - Complete signup
-- `tictic.getUsage()` - Check usage and limits
-
-## Environment Variables
-
-```bash
-TICTIC_API_KEY=tk_xxxxxx      # Your API key
-TICTIC_API_URL=https://...    # Custom API URL (optional)
-```
-
-## Common Issues
-
-**"API key required"**
-
-```bash
-export TICTIC_API_KEY=tk_your_key_here
-# Or pass in constructor: new TicTic({ apiKey: 'tk_...' })
-```
-
-**"Session not ready"**
-
-```javascript
-// Use quickSend for automatic handling
-await tictic.quickSend(phone, message);
-
-// Or manage manually
-await tictic.createSession();
-await tictic.waitForSession();
-```
-
-**QR Code not showing**
-Make sure your terminal supports Unicode. Try:
-
-```javascript
-await tictic.createSession(false); // Disable terminal QR
-// Get QR data to display elsewhere
-const session = await tictic.getSession();
-console.log(session.qrCode); // data:image/png;base64,...
-```
-
-## Requirements
-
-- Node.js 18+
-- Terminal with Unicode support (for QR codes)
-
 ---
 
-Built with ❤️ by developers who got tired of complicated WhatsApp integrations.
+Construído para desenvolvedores que só querem enviar mensagens WhatsApp.  
+_Built for developers who just want to send WhatsApp messages._

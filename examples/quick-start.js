@@ -2,17 +2,22 @@
 
 import TicTic from '@tictic/node';
 
-// The simplest way to send a WhatsApp message
 async function main() {
   const tictic = new TicTic(); // Uses TICTIC_API_KEY from env
 
-  // This handles everything: session check, QR code, waiting
-  const result = await tictic.quickSend(
-    '5511999887766',
-    'Hello from TicTic! 🚀'
-  );
+  // Check if connected to WhatsApp
+  if (!await tictic.isReady()) {
+    console.log('Connecting to WhatsApp...');
+    await tictic.connect(); // Shows QR code
+  }
 
-  console.log('✓✓ Message sent!', result.id);
+  // Send message
+  const result = await tictic.sendText('5511999887766', 'Hello! 🚀');
+  console.log('✓ Sent!', result.id);
+
+  // Check usage
+  const usage = await tictic.getUsage();
+  console.log(`Usage: ${usage.used}/${usage.limit}`);
 }
 
 main().catch(console.error); 

@@ -4,46 +4,26 @@
 
 import { displayQRCode } from './qr.js';
 
-export interface TicTicConfig {
-    apiKey?: string;
-    baseUrl?: string;
-    debug?: boolean;
-}
-
-export interface Message {
-    to: string;
-    message: string;
-}
-
 export interface SendResult {
     id: string;
     timestamp: string;
     to: string;
+    usage?: {
+        used: number;
+        limit: number;
+        remaining: number;
+    };
 }
 
 export interface SessionStatus {
-    status: 'initializing' | 'ready' | 'failed' | 'not_found';
+    status: 'initializing' | 'ready' | 'failed';
     qrCode?: string;
-    connectedAt?: string;
-}
-
-export interface SignupResult {
-    apiKey: string;
-    phone: string;
-}
-
-export interface UsageInfo {
-    used: number;
-    limit: number;
-    remaining: number;
-    percentage: number;
 }
 
 export class TicTicError extends Error {
     constructor(
         message: string,
-        public statusCode: number,
-        public code?: string
+        public statusCode: number
     ) {
         super(message);
         this.name = 'TicTicError';
@@ -52,248 +32,144 @@ export class TicTicError extends Error {
 
 export class TicTic {
     private apiKey: string;
-    private baseUrl: string;
-    private debug: boolean;
+    private baseUrl = 'https://api.tictic.dev';
 
-    constructor(config: TicTicConfig = {}) {
-        this.apiKey = config.apiKey || process.env.TICTIC_API_KEY || '';
-        this.baseUrl = config.baseUrl || process.env.TICTIC_API_URL || 'https://api.tictic.dev';
-        this.debug = config.debug || false;
-
+    constructor(apiKey?: string) {
+        this.apiKey = apiKey || process.env.TICTIC_API_KEY || '';
         if (!this.apiKey) {
-            throw new Error(
-                'API key required. Pass it in config or set TICTIC_API_KEY env var.\n' +
-                'Get your API key: npx @tictic/node signup'
-            );
+            throw new Error('API key required. Set TICTIC_API_KEY or pass to constructor.');
         }
     }
 
-    private log(...args: any[]): void {
-        if (this.debug) {
-            console.log('[TicTic]', ...args);
-        }
-    }
-
-    private async request<T>(
-        path: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        const url = `${this.baseUrl}${path}`;
-        this.log(`${options.method || 'GET'} ${url}`);
-
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        };
-
-        // Add API key for authenticated endpoints
-        if (this.apiKey && !path.startsWith('/v1/auth/')) {
-            headers['X-API-Key'] = this.apiKey;
-        }
-
-        const response = await fetch(url, {
+    private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+        const response = await fetch(`${this.baseUrl}${path}`, {
             ...options,
-            headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': this.apiKey,
+                ...options.headers,
+            },
         });
 
-        const data = await response.json();
-        this.log('Response:', response.status, data);
-
-        if (!response.ok || !data.success) {
-            throw new TicTicError(
-                data.error || 'Request failed',
-                response.status
-            );
+        if (!response.ok) {
+            const error = await response.text();
+            throw new TicTicError(error || 'Request failed', response.status);
         }
 
-        return data.data;
+        return response.json() as T;
     }
 
     /**
      * Send a WhatsApp message
-     * @returns Message details including usage info
      */
-    async send(message: Message): Promise<SendResult & { usage?: UsageInfo }> {
-        // The API returns usage info with every message
-        const result = await this.request<any>('/v1/messages', {
+    async sendText(to: string, message: string): Promise<SendResult> {
+        return this.request<SendResult>('/v1/messages', {
             method: 'POST',
-            body: JSON.stringify(message),
-        });
-
-        // Extract the main result and usage separately
-        const { usage, ...messageResult } = result;
-
-        if (usage) {
-            this.log(`Usage: ${usage.used}/${usage.limit} (${usage.percentage}%)`);
-        }
-
-        return { ...messageResult, usage };
-    }
-
-    /**
-     * Send a simple text message
-     */
-    async sendText(to: string, text: string): Promise<SendResult & { usage?: UsageInfo }> {
-        return this.send({ to, message: text });
-    }
-
-    /**
-     * Create a new WhatsApp session
-     * @param showQR - Display QR code in terminal (default: true)
-     */
-    async createSession(showQR = true): Promise<SessionStatus> {
-        const session = await this.request<SessionStatus>('/v1/sessions', {
-            method: 'POST',
-        });
-
-        if (showQR && session.qrCode) {
-            console.log('\n📱 Scan this QR code with WhatsApp:\n');
-            await displayQRCode(session.qrCode);
-            console.log('\nWaiting for authentication...\n');
-        }
-
-        return session;
-    }
-
-    /**
-     * Get current session status
-     */
-    async getSession(): Promise<SessionStatus> {
-        return this.request<SessionStatus>('/v1/sessions', {
-            method: 'GET',
+            body: JSON.stringify({ to, message }),
         });
     }
 
     /**
-     * Wait for session to be ready
+     * Check if WhatsApp session is ready
      */
-    async waitForSession(
-        options: {
-            timeout?: number;
-            interval?: number;
-            showProgress?: boolean;
-        } = {}
-    ): Promise<void> {
-        const {
-            timeout = 300000, // 5 minutes
-            interval = 2000,
-            showProgress = true
-        } = options;
-
-        const startTime = Date.now();
-        let dots = 0;
-
-        while (Date.now() - startTime < timeout) {
-            const status = await this.getSession();
-
-            if (status.status === 'ready') {
-                if (showProgress) {
-                    console.log('\n✅ WhatsApp connected successfully!\n');
-                }
-                return;
-            }
-
-            if (status.status === 'failed') {
-                throw new TicTicError('Session authentication failed', 400);
-            }
-
-            if (showProgress) {
-                // Animated waiting indicator
-                process.stdout.write(`\rWaiting for QR scan${'.'.repeat(dots % 4)}   `);
-                dots++;
-            }
-
-            await new Promise(resolve => setTimeout(resolve, interval));
-        }
-
-        throw new TicTicError('Session initialization timeout', 408);
-    }
-
-    /**
-     * Initialize session if needed and send message
-     * Convenience method for quick usage
-     */
-    async quickSend(to: string, message: string): Promise<SendResult> {
+    async isReady(): Promise<boolean> {
         try {
-            // Check if session exists
-            const session = await this.getSession();
-
-            if (session.status !== 'ready') {
-                console.log('Setting up WhatsApp connection...');
-                await this.createSession();
-                await this.waitForSession();
-            }
-
-            // Send message
-            return await this.sendText(to, message);
+            const status = await this.request<SessionStatus>('/v1/sessions');
+            return status.status === 'ready';
         } catch (error) {
             if (error instanceof TicTicError && error.statusCode === 404) {
-                // No session exists, create one
-                console.log('Creating WhatsApp session...');
-                await this.createSession();
-                await this.waitForSession();
-                return await this.sendText(to, message);
+                return false; // No session exists
             }
             throw error;
         }
     }
 
-    // Static signup methods (no API key needed)
-    static async requestVerification(phone: string, baseUrl?: string): Promise<{ phone: string }> {
-        const url = baseUrl || process.env.TICTIC_API_URL || 'https://api.tictic.dev';
+    /**
+     * Connect to WhatsApp (shows QR code)
+     */
+    async connect(): Promise<void> {
+        // Create session
+        const session = await this.request<SessionStatus>('/v1/sessions', {
+            method: 'POST',
+        });
 
-        const response = await fetch(`${url}/v1/auth/signup`, {
+        if (session.qrCode) {
+            console.log('\n📱 Scan this QR code with WhatsApp:\n');
+            await displayQRCode(session.qrCode);
+            console.log('\nWaiting for scan...\n');
+        }
+
+        // Wait for ready
+        while (true) {
+            const status = await this.request<SessionStatus>('/v1/sessions');
+
+            if (status.status === 'ready') {
+                console.log('✅ Connected!\n');
+                break;
+            }
+
+            if (status.status === 'failed') {
+                throw new TicTicError('Connection failed', 400);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+
+    /**
+     * Get current usage
+     */
+    async getUsage(): Promise<{
+        used: number;
+        limit: number;
+        remaining: number;
+    }> {
+        const data = await this.request<any>('/v1/usage');
+        return data.usage;
+    }
+
+    // Signup (no API key needed)
+    static async signup(phone: string): Promise<string> {
+        // Step 1: Request code
+        const response1 = await fetch('https://api.tictic.dev/v1/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone }),
         });
 
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new TicTicError(data.error || 'Request failed', response.status);
+        if (!response1.ok) {
+            const error = await response1.text();
+            throw new TicTicError(error || 'Failed to send code', response1.status);
         }
 
-        return data.data;
+        console.log(`Code sent to ${phone} via WhatsApp!`);
+
+        // For now, throw an error asking user to use the verification method
+        // In a real implementation, you'd want to either:
+        // 1. Accept the code as a parameter
+        // 2. Use readline to prompt for it
+        // 3. Return a partial signup object that can be completed
+        throw new Error(
+            'Check your WhatsApp for the code, then call:\n' +
+            `TicTic.verify("${phone}", "123456")`
+        );
     }
 
-    static async verifyAndCreateAccount(
-        phone: string,
-        code: string,
-        baseUrl?: string
-    ): Promise<SignupResult> {
-        const url = baseUrl || process.env.TICTIC_API_URL || 'https://api.tictic.dev';
-
-        const response = await fetch(`${url}/v1/auth/signup`, {
+    static async verify(phone: string, code: string): Promise<string> {
+        const response = await fetch('https://api.tictic.dev/v1/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, verification_code: code }),
         });
 
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new TicTicError(data.error || 'Request failed', response.status);
+        if (!response.ok) {
+            const error = await response.text();
+            throw new TicTicError(error || 'Verification failed', response.status);
         }
 
-        return {
-            apiKey: data.data.api_key,
-            phone: data.data.phone,
-        };
-    }
-
-    /**
-     * Get current usage statistics
-     */
-    async getUsage(): Promise<{
-        plan: string;
-        current_month: string;
-        usage: UsageInfo;
-        history: Array<{ month: string; count: number }>;
-    }> {
-        return this.request('/v1/usage');
+        const data = await response.json() as { api_key: string };
+        return data.api_key;
     }
 }
 
-// Re-export for convenience
 export default TicTic; 

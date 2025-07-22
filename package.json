@@ -1,7 +1,7 @@
 {
     "name": "tictic",
     "version": "0.0.1",
-    "description": "Simple, well-crafted Node.js SDK for TicTic WhatsApp API",
+    "description": "Simple WhatsApp messaging SDK for Node.js",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "type": "module",
@@ -16,11 +16,9 @@
     },
     "keywords": [
         "whatsapp",
-        "api",
-        "tictic",
-        "sdk",
         "messaging",
-        "brazil"
+        "api",
+        "sdk"
     ],
     "author": "TicTic Team",
     "license": "MIT",
