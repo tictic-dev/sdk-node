@@ -1,58 +1,66 @@
 {
-  "name": "@tictic/sdk",
-  "version": "0.0.1",
-  "description": "Simple WhatsApp messaging SDK for Node.js",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "prepublishOnly": "npm run build",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
-    "prepare": "husky"
-  },
-  "keywords": [
-    "whatsapp",
-    "messaging",
-    "api",
-    "sdk"
-  ],
-  "author": "TicTic Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tictic-dev/sdk-node.git"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ]
-  },
-  "dependencies": {
-    "qrcode-terminal": "^0.12.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.31.0",
-    "@types/node": "^20.11.0",
-    "@types/qrcode-terminal": "^0.12.0",
-    "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.8",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
-    "prettier": "^3.6.2",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.38.0"
-  }
+    "name": "@tictic/sdk",
+    "version": "0.0.0-development",
+    "description": "Simple WhatsApp messaging SDK for Node.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "prepublishOnly": "npm run build",
+        "lint": "eslint src",
+        "lint:fix": "eslint src --fix",
+        "format": "prettier --write \"src/**/*.ts\"",
+        "format:check": "prettier --check \"src/**/*.ts\"",
+        "prepare": "husky"
+    },
+    "keywords": [
+        "whatsapp",
+        "messaging",
+        "api",
+        "sdk"
+    ],
+    "author": "TicTic Team",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tictic-dev/sdk-node.git"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "lint-staged": {
+        "*.ts": [
+            "eslint --fix",
+            "prettier --write"
+        ]
+    },
+    "dependencies": {
+        "qrcode-terminal": "^0.12.0"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^19.8.1",
+        "@commitlint/config-conventional": "^19.8.1",
+        "@eslint/js": "^9.31.0",
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/git": "^10.0.1",
+        "@types/node": "^20.11.0",
+        "@types/qrcode-terminal": "^0.12.0",
+        "eslint": "^9.31.0",
+        "eslint-config-prettier": "^10.1.8",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.1.2",
+        "prettier": "^3.6.2",
+        "semantic-release": "^24.2.7",
+        "typescript": "^5.3.3",
+        "typescript-eslint": "^8.38.0"
+    }
 }

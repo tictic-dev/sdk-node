@@ -9,6 +9,8 @@ eslint.config.mjs
 .prettierrc
 .gitignore
 .npmignore
+.releaserc.json
+.commitlintrc.json
 
 # Husky
 .husky/

@@ -11,13 +11,13 @@ npm install @tictic/sdk
 ### 1. Obtenha sua Chave de API
 
 ```javascript
-import TicTic from "@tictic/sdk";
+import TicTic from '@tictic/sdk';
 
 // Solicitar código de verificação
-await TicTic.requestCode("5511999887766");
+await TicTic.requestCode('5511999887766');
 
 // Verifique seu WhatsApp pelo código, depois confirme
-const apiKey = await TicTic.verifyCode("5511999887766", "123456");
+const apiKey = await TicTic.verifyCode('5511999887766', '123456');
 
 // Salve sua chave de API
 process.env.TICTIC_API_KEY = apiKey;
@@ -34,13 +34,13 @@ if (!(await tictic.isReady())) {
 }
 
 // Enviar mensagem
-await tictic.sendText("5511999887766", "Olá! 👋");
+await tictic.sendText('5511999887766', 'Olá! 👋');
 ```
 
 ## Exemplo Completo
 
 ```javascript
-import TicTic from "@tictic/sdk";
+import TicTic from '@tictic/sdk';
 
 async function main() {
   try {
@@ -48,22 +48,19 @@ async function main() {
 
     // Garantir conexão
     if (!(await tictic.isReady())) {
-      console.log("Escaneie o QR code com WhatsApp...");
+      console.log('Escaneie o QR code com WhatsApp...');
       await tictic.connect();
     }
 
     // Enviar mensagem
-    const result = await tictic.sendText(
-      "5511999887766",
-      "Pedido confirmado! 📦"
-    );
-    console.log("Mensagem enviada:", result.id);
+    const result = await tictic.sendText('5511999887766', 'Pedido confirmado! 📦');
+    console.log('Mensagem enviada:', result.id);
 
     // Verificar uso
     const usage = await tictic.getUsage();
     console.log(`Usado ${usage.used} de ${usage.limit} mensagens`);
   } catch (error) {
-    console.error("Erro:", error.message);
+    console.error('Erro:', error.message);
   }
 }
 
@@ -111,21 +108,21 @@ TICTIC_API_URL=https://...    # URL da API (opcional)
 ## Tratamento de Erros
 
 ```javascript
-import TicTic from "@tictic/sdk";
+import TicTic from '@tictic/sdk';
 
 try {
-  await tictic.sendText("5511999887766", "Olá!");
+  await tictic.sendText('5511999887766', 'Olá!');
 } catch (error) {
-  if (error.name === "TicTicError") {
+  if (error.name === 'TicTicError') {
     console.error(`Erro ${error.code}: ${error.message}`);
 
     // Tratar erros específicos
     switch (error.code) {
-      case "USAGE_LIMIT_EXCEEDED":
-        console.log("Limite mensal atingido. Faça upgrade do seu plano.");
+      case 'USAGE_LIMIT_EXCEEDED':
+        console.log('Limite mensal atingido. Faça upgrade do seu plano.');
         break;
-      case "WHATSAPP_ERROR":
-        console.log("WhatsApp não conectado. Execute connect() primeiro.");
+      case 'WHATSAPP_ERROR':
+        console.log('WhatsApp não conectado. Execute connect() primeiro.');
         break;
     }
   }
@@ -159,13 +156,13 @@ npm install @tictic/sdk
 #### 1. Get Your API Key
 
 ```javascript
-import TicTic from "@tictic/sdk";
+import TicTic from '@tictic/sdk';
 
 // Request verification code
-await TicTic.requestCode("5511999887766");
+await TicTic.requestCode('5511999887766');
 
 // Check WhatsApp for code, then verify
-const apiKey = await TicTic.verifyCode("5511999887766", "123456");
+const apiKey = await TicTic.verifyCode('5511999887766', '123456');
 
 // Save your API key
 process.env.TICTIC_API_KEY = apiKey;
@@ -182,13 +179,13 @@ if (!(await tictic.isReady())) {
 }
 
 // Send message
-await tictic.sendText("5511999887766", "Hello! 👋");
+await tictic.sendText('5511999887766', 'Hello! 👋');
 ```
 
 ### Complete Example
 
 ```javascript
-import TicTic from "@tictic/sdk";
+import TicTic from '@tictic/sdk';
 
 async function main() {
   try {
@@ -196,22 +193,19 @@ async function main() {
 
     // Ensure connected
     if (!(await tictic.isReady())) {
-      console.log("Scan the QR code with WhatsApp...");
+      console.log('Scan the QR code with WhatsApp...');
       await tictic.connect();
     }
 
     // Send message
-    const result = await tictic.sendText(
-      "5511999887766",
-      "Order confirmed! 📦"
-    );
-    console.log("Message sent:", result.id);
+    const result = await tictic.sendText('5511999887766', 'Order confirmed! 📦');
+    console.log('Message sent:', result.id);
 
     // Check usage
     const usage = await tictic.getUsage();
     console.log(`Used ${usage.used} of ${usage.limit} messages`);
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error('Error:', error.message);
   }
 }
 
@@ -259,21 +253,21 @@ TICTIC_API_URL=https://...    # API URL (optional)
 ### Error Handling
 
 ```javascript
-import TicTic from "@tictic/sdk";
+import TicTic from '@tictic/sdk';
 
 try {
-  await tictic.sendText("5511999887766", "Hello!");
+  await tictic.sendText('5511999887766', 'Hello!');
 } catch (error) {
-  if (error.name === "TicTicError") {
+  if (error.name === 'TicTicError') {
     console.error(`Error ${error.code}: ${error.message}`);
 
     // Handle specific errors
     switch (error.code) {
-      case "USAGE_LIMIT_EXCEEDED":
-        console.log("Monthly limit reached. Upgrade your plan.");
+      case 'USAGE_LIMIT_EXCEEDED':
+        console.log('Monthly limit reached. Upgrade your plan.');
         break;
-      case "WHATSAPP_ERROR":
-        console.log("WhatsApp not connected. Run connect() first.");
+      case 'WHATSAPP_ERROR':
+        console.log('WhatsApp not connected. Run connect() first.');
         break;
     }
   }
@@ -285,6 +279,50 @@ try {
 - Node.js 18+
 - Terminal with Unicode support (for QR codes)
 - WhatsApp account
+
+## Development
+
+### Commit Conventions
+
+This project uses [Conventional Commits](https://conventionalcommits.org/) for automatic versioning and changelog generation.
+
+**Commit Format:**
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+- `feat:` → Minor version bump (new feature)
+- `fix:` → Patch version bump (bug fix)
+- `docs:` → No version bump (documentation)
+- `chore:` → No version bump (maintenance)
+- `BREAKING CHANGE:` → Major version bump (breaking change)
+
+**Examples:**
+
+```bash
+git commit -m "feat: add media message support"
+git commit -m "fix: handle connection timeouts"
+git commit -m "feat!: change API response format"
+```
+
+### Release Process
+
+Releases are automated via GitHub Actions when code is pushed to `main`:
+
+1. Commits are analyzed for semantic versioning
+2. Version is bumped automatically
+3. Changelog is generated
+4. Package is published to NPM
+5. GitHub release is created
+
+No manual version bumping required!
 
 ### License
 
