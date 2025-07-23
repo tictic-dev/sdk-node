@@ -1,7 +1,22 @@
+# Source and development
 src/
 examples/
+*.ts
+
+# Config files
 tsconfig.json
+eslint.config.mjs
+.prettierrc
 .gitignore
 .npmignore
+
+# Husky
+.husky/
+
+# Environment and OS
 .env
 .DS_Store
+
+# Logs and temp
+*.log
+npm-debug.log*
