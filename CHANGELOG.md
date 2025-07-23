@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/tictic-dev/sdk-node/compare/v1.0.0...v1.0.1) (2025-07-23)
+
+
+### Bug Fixes
+
+* update session status check from 'connected' to 'ready' in TicTic class ([67b4177](https://github.com/tictic-dev/sdk-node/commit/67b4177e492eec96adbe34d18598c8f06dd40989))
+
 # 1.0.0 (2025-07-23)
 
 
