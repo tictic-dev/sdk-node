@@ -14,7 +14,7 @@ export function displayQRCode(data: string): Promise<void> {
       ? Buffer.from(data.split(',')[1], 'base64').toString()
       : data;
 
-    qrcode.generate(qrData, { small: false }, () => {
+    qrcode.generate(qrData, { small: true }, () => {
       resolve();
     });
   });
