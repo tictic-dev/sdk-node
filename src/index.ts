@@ -81,7 +81,7 @@ export class TicTic {
     try {
       const sessions = await this.request<any[]>('/v1/sessions');
       // Check if we have any connected session
-      return sessions.some((s) => s.status === 'connected');
+      return sessions.some((s) => s.status === 'ready');
     } catch (error) {
       if (error instanceof TicTicError && error.statusCode === 404) {
         return false;
