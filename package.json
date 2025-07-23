@@ -1,5 +1,5 @@
 {
-    "name": "tictic",
+    "name": "@tictic/sdk",
     "version": "0.0.1",
     "description": "Simple WhatsApp messaging SDK for Node.js",
     "main": "dist/index.js",
@@ -24,7 +24,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/tictic-dev/tictic-node"
+        "url": "git+https://github.com/tictic-dev/sdk-node.git"
     },
     "engines": {
         "node": ">=18.0.0"

@@ -1,5 +1,5 @@
 /**
- * @tictic/node - Simple WhatsApp messaging SDK
+ * @tictic/sdk - Simple WhatsApp messaging SDK
  */
 
 import { displayQRCode } from './qr.js';

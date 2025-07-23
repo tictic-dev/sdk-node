@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import TicTic from '@tictic/node';
+import TicTic from '@tictic/sdk';
 import readline from 'readline/promises';
 
 async function signup() {

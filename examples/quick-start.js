@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import TicTic from '@tictic/node';
+import TicTic from '@tictic/sdk';
 
 async function main() {
   try {

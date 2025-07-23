@@ -3,7 +3,7 @@
 SDK simples para mensagens WhatsApp em Node.js. Envie mensagens em minutos, não horas.
 
 ```bash
-npm install @tictic/node
+npm install @tictic/sdk
 ```
 
 ## Início Rápido
@@ -11,7 +11,7 @@ npm install @tictic/node
 ### 1. Obtenha sua Chave de API
 
 ```javascript
-import TicTic from "@tictic/node";
+import TicTic from "@tictic/sdk";
 
 // Solicitar código de verificação
 await TicTic.requestCode("5511999887766");
@@ -40,7 +40,7 @@ await tictic.sendText("5511999887766", "Olá! 👋");
 ## Exemplo Completo
 
 ```javascript
-import TicTic from "@tictic/node";
+import TicTic from "@tictic/sdk";
 
 async function main() {
   try {
@@ -111,7 +111,7 @@ TICTIC_API_URL=https://...    # URL da API (opcional)
 ## Tratamento de Erros
 
 ```javascript
-import TicTic from "@tictic/node";
+import TicTic from "@tictic/sdk";
 
 try {
   await tictic.sendText("5511999887766", "Olá!");
@@ -151,7 +151,7 @@ MIT
 Send messages in minutes, not hours.
 
 ```bash
-npm install @tictic/node
+npm install @tictic/sdk
 ```
 
 ### Quick Start
@@ -159,7 +159,7 @@ npm install @tictic/node
 #### 1. Get Your API Key
 
 ```javascript
-import TicTic from "@tictic/node";
+import TicTic from "@tictic/sdk";
 
 // Request verification code
 await TicTic.requestCode("5511999887766");
@@ -188,7 +188,7 @@ await tictic.sendText("5511999887766", "Hello! 👋");
 ### Complete Example
 
 ```javascript
-import TicTic from "@tictic/node";
+import TicTic from "@tictic/sdk";
 
 async function main() {
   try {
@@ -259,7 +259,7 @@ TICTIC_API_URL=https://...    # API URL (optional)
 ### Error Handling
 
 ```javascript
-import TicTic from "@tictic/node";
+import TicTic from "@tictic/sdk";
 
 try {
   await tictic.sendText("5511999887766", "Hello!");
