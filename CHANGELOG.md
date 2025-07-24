@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/tictic-dev/sdk-node/compare/v1.0.1...v1.0.2) (2025-07-24)
+
+
+### Bug Fixes
+
+* update QR code handling in TicTic class and improve session status check ([0731a75](https://github.com/tictic-dev/sdk-node/commit/0731a7505e0ef0756435748de6c09bf570caf3bb))
+
 ## [1.0.1](https://github.com/tictic-dev/sdk-node/compare/v1.0.0...v1.0.1) (2025-07-23)
 
 
