@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/tictic-dev/sdk-node/compare/v1.0.2...v1.1.0) (2025-07-24)
+
+
+### Features
+
+* bump version ([29acd59](https://github.com/tictic-dev/sdk-node/commit/29acd59c2ce5450ef31b52b9c8baa6c21dfd82a2))
+
 ## [1.0.2](https://github.com/tictic-dev/sdk-node/compare/v1.0.1...v1.0.2) (2025-07-24)
 
 
