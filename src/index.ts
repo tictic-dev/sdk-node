@@ -81,7 +81,7 @@ export class TicTic {
     try {
       const sessions = await this.request<any[]>('/v1/sessions');
       // Check if we have any connected session
-      return sessions.some((s) => s.status === 'ready');
+      return sessions.some((s) => s.status === 'connected');
     } catch (error) {
       if (error instanceof TicTicError && error.statusCode === 404) {
         return false;
@@ -100,15 +100,18 @@ export class TicTic {
       body: JSON.stringify({}), // Empty body is fine
     });
 
-    if (session.qr_code) {
+    // Get QR code separately
+    const qrResponse = await this.request<any>(`/v1/sessions/${session.id}/qr`);
+
+    if (qrResponse.qr) {
       console.log('\n📱 Scan this QR code with WhatsApp:\n');
-      await displayQRCode(session.qr_code);
+      await displayQRCode(qrResponse.qr);
       console.log('\nWaiting for scan...\n');
 
       // Instructions
-      if (session.instructions) {
+      if (qrResponse.instructions) {
         console.log('Instructions:');
-        session.instructions.forEach((step: string, i: number) => {
+        qrResponse.instructions.forEach((step: string, i: number) => {
           console.log(`${i + 1}. ${step}`);
         });
         console.log();
