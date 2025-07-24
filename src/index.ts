@@ -17,11 +17,19 @@ export interface UsageInfo {
   remaining: number;
 }
 
+export interface StatusInfo {
+  ready: boolean;
+  status: string;
+  phone?: string;
+  next_step?: string;
+}
+
 export class TicTicError extends Error {
   constructor(
     message: string,
     public statusCode: number,
     public code?: string,
+    public help?: string,
   ) {
     super(message);
     this.name = 'TicTicError';
@@ -55,10 +63,14 @@ export class TicTic {
 
     if (!response.ok) {
       const error = data.error;
-      throw new TicTicError(error?.message || 'Request failed', response.status, error?.code);
+      throw new TicTicError(
+        error?.message || 'Request failed',
+        response.status,
+        error?.code || error?.type,
+        error?.help,
+      );
     }
 
-    // API returns { success: true, data: ... }
     return data.data as T;
   }
 
@@ -66,79 +78,81 @@ export class TicTic {
    * Send a WhatsApp message
    */
   async sendText(to: string, text: string): Promise<SendResult> {
-    const result = await this.request<any>('/v1/messages', {
+    return await this.request<SendResult>('/v1/messages', {
       method: 'POST',
-      body: JSON.stringify({ to, text }), // Changed from 'message' to 'text'
+      body: JSON.stringify({ to, text }),
     });
-
-    return result;
   }
 
   /**
-   * Check if WhatsApp session is ready
+   * Check if WhatsApp is connected and ready
    */
   async isReady(): Promise<boolean> {
     try {
-      const sessions = await this.request<any[]>('/v1/sessions');
-      // Check if we have any connected session
-      return sessions.some((s) => s.status === 'connected');
-    } catch (error) {
-      if (error instanceof TicTicError && error.statusCode === 404) {
-        return false;
-      }
-      throw error;
+      const status = await this.request<StatusInfo>('/v1/status');
+      return status.ready;
+    } catch {
+      return false;
     }
   }
 
   /**
-   * Connect to WhatsApp (shows QR code)
+   * Get detailed connection status
+   */
+  async getStatus(): Promise<StatusInfo> {
+    return await this.request<StatusInfo>('/v1/status');
+  }
+
+  /**
+   * Connect to WhatsApp (shows QR code if needed)
    */
   async connect(): Promise<void> {
-    // Create session
-    const session = await this.request<any>('/v1/sessions', {
-      method: 'POST',
-      body: JSON.stringify({}), // Empty body is fine
-    });
+    // Get QR code (session created automatically if needed)
+    const qrData = await this.request<any>('/v1/qr');
 
-    // Get QR code separately
-    const qrResponse = await this.request<any>(`/v1/sessions/${session.id}/qr`);
-
-    if (qrResponse.qr) {
-      console.log('\n📱 Scan this QR code with WhatsApp:\n');
-      await displayQRCode(qrResponse.qr);
-      console.log('\nWaiting for scan...\n');
-
-      // Instructions
-      if (qrResponse.instructions) {
-        console.log('Instructions:');
-        qrResponse.instructions.forEach((step: string, i: number) => {
-          console.log(`${i + 1}. ${step}`);
-        });
-        console.log();
-      }
+    if (qrData.status === 'already_connected') {
+      console.log('✅ Already connected to WhatsApp!\n');
+      return;
     }
 
-    // Poll for connection status
+    if (qrData.qr) {
+      console.log('\n📱 Scan this QR code with WhatsApp:\n');
+      await displayQRCode(qrData.qr);
+
+      if (qrData.instructions) {
+        console.log('\nInstructions:');
+        qrData.instructions.forEach((step: string, i: number) => {
+          console.log(`${i + 1}. ${step}`);
+        });
+      }
+
+      console.log('\n⏳ Waiting for scan...\n');
+    }
+
+    // Poll for connection
     let attempts = 0;
-    const maxAttempts = 60; // 2 minutes timeout
+    const maxAttempts = 60; // 2 minutes
 
     while (attempts < maxAttempts) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const ready = await this.isReady();
-      if (ready) {
+      const status = await this.request<StatusInfo>('/v1/status');
+      if (status.ready) {
         console.log('✅ Connected to WhatsApp!\n');
+        if (status.phone) {
+          console.log(`📱 Connected as: ${status.phone}\n`);
+        }
         return;
       }
 
       attempts++;
     }
 
-    throw new TicTicError('Connection timeout', 408);
+    throw new TicTicError('Connection timeout', 408, 'TIMEOUT');
   }
 
   /**
-   * Get current usage
+   * Get current usage statistics
    */
   async getUsage(): Promise<UsageInfo> {
     const data = await this.request<any>('/v1/usage');
@@ -150,7 +164,7 @@ export class TicTic {
   }
 
   /**
-   * Static method to request verification code
+   * Request verification code
    */
   static async requestCode(phone: string, options?: { baseUrl?: string }): Promise<void> {
     const baseUrl = options?.baseUrl || process.env.TICTIC_API_URL || 'https://api.tictic.dev';
@@ -165,15 +179,19 @@ export class TicTic {
 
     if (!response.ok) {
       const error = data.error;
-      throw new TicTicError(error?.message || 'Failed to send code', response.status, error?.code);
+      throw new TicTicError(
+        error?.message || 'Failed to send code',
+        response.status,
+        error?.code || error?.type,
+      );
     }
 
     console.log(`✅ Verification code sent to ${phone} via WhatsApp!`);
-    console.log('Check your WhatsApp messages.');
+    console.log('📱 Check your WhatsApp messages.');
   }
 
   /**
-   * Static method to verify code and get API key
+   * Verify code and get API key
    */
   static async verifyCode(
     phone: string,
@@ -192,29 +210,14 @@ export class TicTic {
 
     if (!response.ok) {
       const error = data.error;
-      throw new TicTicError(error?.message || 'Verification failed', response.status, error?.code);
+      throw new TicTicError(
+        error?.message || 'Verification failed',
+        response.status,
+        error?.code || error?.type,
+      );
     }
 
-    // Extract API key from nested structure
     return data.data.api_key;
-  }
-
-  /**
-   * @deprecated Use TicTic.requestCode() instead
-   */
-  static async signup(phone: string): Promise<string> {
-    await TicTic.requestCode(phone);
-    throw new Error(
-      'Check your WhatsApp for the code, then call:\n' +
-        `const apiKey = await TicTic.verifyCode("${phone}", "123456")`,
-    );
-  }
-
-  /**
-   * @deprecated Use TicTic.verifyCode() instead
-   */
-  static async verify(phone: string, code: string): Promise<string> {
-    return TicTic.verifyCode(phone, code);
   }
 }
 

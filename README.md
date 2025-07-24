@@ -1,6 +1,6 @@
 # TicTic ✓✓ - Node SDK
 
-SDK simples para mensagens WhatsApp em Node.js. Envie mensagens em minutos, não horas.
+SDK para mensagens WhatsApp via HTTP API. Baseado em whatsapp-web.js.
 
 ```bash
 npm install @tictic/sdk
@@ -8,33 +8,26 @@ npm install @tictic/sdk
 
 ## Início Rápido
 
-### 1. Obtenha sua Chave de API
+### 1. Obter chave de API
 
 ```javascript
 import TicTic from '@tictic/sdk';
 
-// Solicitar código de verificação
 await TicTic.requestCode('5511999887766');
-
-// Verifique seu WhatsApp pelo código, depois confirme
 const apiKey = await TicTic.verifyCode('5511999887766', '123456');
-
-// Salve sua chave de API
-process.env.TICTIC_API_KEY = apiKey;
 ```
 
-### 2. Envie Mensagens
+### 2. Conectar WhatsApp
 
 ```javascript
-const tictic = new TicTic(); // Usa TICTIC_API_KEY da variável de ambiente
+const tictic = new TicTic(apiKey);
+await tictic.connect(); // Exibe QR code
+```
 
-// Conecte ao WhatsApp (apenas na primeira vez)
-if (!(await tictic.isReady())) {
-  await tictic.connect(); // Mostra QR code
-}
+### 3. Enviar mensagens
 
-// Enviar mensagem
-await tictic.sendText('5511999887766', 'Olá! 👋');
+```javascript
+await tictic.sendText('5511999887766', 'Olá!');
 ```
 
 ## Exemplo Completo
@@ -43,28 +36,19 @@ await tictic.sendText('5511999887766', 'Olá! 👋');
 import TicTic from '@tictic/sdk';
 
 async function main() {
-  try {
-    const tictic = new TicTic(process.env.TICTIC_API_KEY);
+  const tictic = new TicTic(); // Usa TICTIC_API_KEY do env
 
-    // Garantir conexão
-    if (!(await tictic.isReady())) {
-      console.log('Escaneie o QR code com WhatsApp...');
-      await tictic.connect();
-    }
-
-    // Enviar mensagem
-    const result = await tictic.sendText('5511999887766', 'Pedido confirmado! 📦');
-    console.log('Mensagem enviada:', result.id);
-
-    // Verificar uso
-    const usage = await tictic.getUsage();
-    console.log(`Usado ${usage.used} de ${usage.limit} mensagens`);
-  } catch (error) {
-    console.error('Erro:', error.message);
+  // Conectar se necessário
+  if (!(await tictic.isReady())) {
+    await tictic.connect();
   }
+
+  // Enviar mensagem
+  const result = await tictic.sendText('5511999887766', 'Olá! ✓✓');
+  console.log('Mensagem enviada:', result);
 }
 
-main();
+main().catch(console.error);
 ```
 
 ## Referência da API
@@ -82,13 +66,16 @@ const apiKey = await TicTic.verifyCode(telefone, codigo);
 ### Métodos do Cliente
 
 ```javascript
-// Inicializar cliente
-const tictic = new TicTic(apiKey?);
+const tictic = new TicTic(apiKey?); // Usa TICTIC_API_KEY se não fornecido
 
-// Verificar conexão
-const isConnected = await tictic.isReady();
+// Verificar se conectado
+const ready = await tictic.isReady();
 
-// Conectar ao WhatsApp (mostra QR code)
+// Obter status detalhado (para debug)
+const status = await tictic.getStatus();
+// Retorna: { ready: boolean, status: string, phone?: string, next_step?: string }
+
+// Conectar ao WhatsApp
 await tictic.connect();
 
 // Enviar mensagem de texto
@@ -108,44 +95,53 @@ TICTIC_API_URL=https://...    # URL da API (opcional)
 ## Tratamento de Erros
 
 ```javascript
-import TicTic from '@tictic/sdk';
-
 try {
   await tictic.sendText('5511999887766', 'Olá!');
 } catch (error) {
   if (error.name === 'TicTicError') {
     console.error(`Erro ${error.code}: ${error.message}`);
 
-    // Tratar erros específicos
-    switch (error.code) {
-      case 'USAGE_LIMIT_EXCEEDED':
-        console.log('Limite mensal atingido. Faça upgrade do seu plano.');
-        break;
-      case 'WHATSAPP_ERROR':
-        console.log('WhatsApp não conectado. Execute connect() primeiro.');
-        break;
+    if (error.help) {
+      console.error(`Ajuda: ${error.help}`);
     }
   }
 }
 ```
 
+## Script de Configuração
+
+Use o script interativo para começar:
+
+```bash
+node examples/signup.js
+```
+
+Processo:
+
+1. Solicita seu número de telefone
+2. Envia código via WhatsApp
+3. Gera sua chave de API
+4. Mostra como usar
+
 ## Requisitos
 
 - Node.js 18+
-- Terminal com suporte Unicode (para QR codes)
+- Terminal com suporte Unicode
 - Conta WhatsApp
 
-## Licença
+## Limitações
 
-MIT
+- Baseado em whatsapp-web.js (não oficial)
+- Requer sessão ativa do WhatsApp Web
+- Use por sua conta e risco
 
 ---
 
 ## English Documentation
 
-### Simple WhatsApp messaging SDK for Node.js
+### WhatsApp messaging SDK for Node.js
 
-Send messages in minutes, not hours.
+HTTP API for WhatsApp messages. Built on whatsapp-web.js.
 
 ```bash
 npm install @tictic/sdk
@@ -153,33 +149,26 @@ npm install @tictic/sdk
 
 ### Quick Start
 
-#### 1. Get Your API Key
+#### 1. Get API key
 
 ```javascript
 import TicTic from '@tictic/sdk';
 
-// Request verification code
 await TicTic.requestCode('5511999887766');
-
-// Check WhatsApp for code, then verify
 const apiKey = await TicTic.verifyCode('5511999887766', '123456');
-
-// Save your API key
-process.env.TICTIC_API_KEY = apiKey;
 ```
 
-#### 2. Send Messages
+#### 2. Connect WhatsApp
 
 ```javascript
-const tictic = new TicTic(); // Uses TICTIC_API_KEY env var
+const tictic = new TicTic(apiKey);
+await tictic.connect(); // Shows QR code
+```
 
-// Connect to WhatsApp (first time only)
-if (!(await tictic.isReady())) {
-  await tictic.connect(); // Shows QR code
-}
+#### 3. Send messages
 
-// Send message
-await tictic.sendText('5511999887766', 'Hello! 👋');
+```javascript
+await tictic.sendText('5511999887766', 'Hello!');
 ```
 
 ### Complete Example
@@ -188,28 +177,19 @@ await tictic.sendText('5511999887766', 'Hello! 👋');
 import TicTic from '@tictic/sdk';
 
 async function main() {
-  try {
-    const tictic = new TicTic(process.env.TICTIC_API_KEY);
+  const tictic = new TicTic(); // Uses TICTIC_API_KEY from env
 
-    // Ensure connected
-    if (!(await tictic.isReady())) {
-      console.log('Scan the QR code with WhatsApp...');
-      await tictic.connect();
-    }
-
-    // Send message
-    const result = await tictic.sendText('5511999887766', 'Order confirmed! 📦');
-    console.log('Message sent:', result.id);
-
-    // Check usage
-    const usage = await tictic.getUsage();
-    console.log(`Used ${usage.used} of ${usage.limit} messages`);
-  } catch (error) {
-    console.error('Error:', error.message);
+  // Connect if needed
+  if (!(await tictic.isReady())) {
+    await tictic.connect();
   }
+
+  // Send message
+  const result = await tictic.sendText('5511999887766', 'Hello! ✓✓');
+  console.log('Message sent:', result);
 }
 
-main();
+main().catch(console.error);
 ```
 
 ### API Reference
@@ -227,13 +207,16 @@ const apiKey = await TicTic.verifyCode(phone, code);
 #### Client Methods
 
 ```javascript
-// Initialize client
-const tictic = new TicTic(apiKey?);
+const tictic = new TicTic(apiKey?); // Uses TICTIC_API_KEY if not provided
 
-// Check connection
-const isConnected = await tictic.isReady();
+// Check if connected
+const ready = await tictic.isReady();
 
-// Connect to WhatsApp (shows QR code)
+// Get detailed status (for debugging)
+const status = await tictic.getStatus();
+// Returns: { ready: boolean, status: string, phone?: string, next_step?: string }
+
+// Connect to WhatsApp
 await tictic.connect();
 
 // Send text message
@@ -253,77 +236,62 @@ TICTIC_API_URL=https://...    # API URL (optional)
 ### Error Handling
 
 ```javascript
-import TicTic from '@tictic/sdk';
-
 try {
   await tictic.sendText('5511999887766', 'Hello!');
 } catch (error) {
   if (error.name === 'TicTicError') {
     console.error(`Error ${error.code}: ${error.message}`);
 
-    // Handle specific errors
-    switch (error.code) {
-      case 'USAGE_LIMIT_EXCEEDED':
-        console.log('Monthly limit reached. Upgrade your plan.');
-        break;
-      case 'WHATSAPP_ERROR':
-        console.log('WhatsApp not connected. Run connect() first.');
-        break;
+    if (error.help) {
+      console.error(`Help: ${error.help}`);
     }
   }
 }
 ```
 
+### Setup Script
+
+Use the interactive setup script:
+
+```bash
+node examples/signup.js
+```
+
+Process:
+
+1. Request your phone number
+2. Send code via WhatsApp
+3. Generate your API key
+4. Show how to use it
+
 ### Requirements
 
 - Node.js 18+
-- Terminal with Unicode support (for QR codes)
+- Terminal with Unicode support
 - WhatsApp account
+
+### Limitations
+
+- Built on whatsapp-web.js (unofficial)
+- Requires active WhatsApp Web session
+- Use at your own risk
 
 ## Development
 
 ### Commit Conventions
 
-This project uses [Conventional Commits](https://conventionalcommits.org/) for automatic versioning and changelog generation.
-
-**Commit Format:**
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-**Types:**
-
-- `feat:` → Minor version bump (new feature)
-- `fix:` → Patch version bump (bug fix)
-- `docs:` → No version bump (documentation)
-- `chore:` → No version bump (maintenance)
-- `BREAKING CHANGE:` → Major version bump (breaking change)
-
-**Examples:**
+This project uses [Conventional Commits](https://conventionalcommits.org/):
 
 ```bash
-git commit -m "feat: add media message support"
-git commit -m "fix: handle connection timeouts"
-git commit -m "feat!: change API response format"
+git commit -m "feat: add new feature"
+git commit -m "fix: resolve bug"
+git commit -m "docs: update readme"
 ```
 
 ### Release Process
 
-Releases are automated via GitHub Actions when code is pushed to `main`:
+Automated via GitHub Actions when pushed to `main`.
 
-1. Commits are analyzed for semantic versioning
-2. Version is bumped automatically
-3. Changelog is generated
-4. Package is published to NPM
-5. GitHub release is created
-
-No manual version bumping required!
-
-### License
+## License
 
 MIT
