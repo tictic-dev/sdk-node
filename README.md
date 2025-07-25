@@ -1,4 +1,167 @@
-# TicTic ✓✓ - Node SDK
+# TicTic ✓✓ - Node.js SDK
+
+[Documentação em Português](#pt-br)
+
+HTTP API for WhatsApp messages. Built on whatsapp-web.js.
+
+```bash
+npm install @tictic/sdk
+```
+
+## Quick Start
+
+### 1. Get API key
+
+```javascript
+import TicTic from '@tictic/sdk';
+
+await TicTic.requestCode('5511999887766');
+const apiKey = await TicTic.verifyCode('5511999887766', '123456');
+```
+
+### 2. Connect WhatsApp
+
+```javascript
+const tictic = new TicTic(apiKey);
+await tictic.connect(); // Shows QR code
+```
+
+### 3. Send messages
+
+```javascript
+await tictic.sendText('5511999887766', 'Hello!');
+```
+
+## Complete Example
+
+```javascript
+import TicTic from '@tictic/sdk';
+
+async function main() {
+  const tictic = new TicTic(); // Uses TICTIC_API_KEY from env
+
+  // Connect if needed
+  if (!(await tictic.isReady())) {
+    await tictic.connect();
+  }
+
+  // Send message
+  const result = await tictic.sendText('5511999887766', 'Hello! ✓✓');
+  console.log('Message sent:', result);
+}
+
+main().catch(console.error);
+```
+
+## API Reference
+
+### Authentication
+
+```javascript
+// Request verification code
+await TicTic.requestCode(phone);
+
+// Verify code and get API key
+const apiKey = await TicTic.verifyCode(phone, code);
+```
+
+### Client Methods
+
+```javascript
+const tictic = new TicTic(apiKey?); // Uses TICTIC_API_KEY if not provided
+
+// Check if connected
+const ready = await tictic.isReady();
+
+// Get detailed status (for debugging)
+const status = await tictic.getStatus();
+// Returns: { ready: boolean, status: string, phone?: string, next_step?: string }
+
+// Connect to WhatsApp
+await tictic.connect();
+
+// Send text message
+const result = await tictic.sendText(to, text);
+
+// Check usage
+const { used, limit, remaining } = await tictic.getUsage();
+```
+
+## Environment Variables
+
+```bash
+TICTIC_API_KEY=tk_xxxxx       # Your API key
+TICTIC_API_URL=https://...    # API URL (optional)
+```
+
+## Error Handling
+
+```javascript
+try {
+  await tictic.sendText('5511999887766', 'Hello!');
+} catch (error) {
+  if (error.name === 'TicTicError') {
+    console.error(`Error ${error.code}: ${error.message}`);
+
+    if (error.help) {
+      console.error(`Help: ${error.help}`);
+    }
+  }
+}
+```
+
+## Setup Script
+
+Use the interactive setup script:
+
+```bash
+node examples/signup.js
+```
+
+Process:
+
+1. Request your phone number
+2. Send code via WhatsApp
+3. Generate your API key
+4. Show how to use it
+
+## Requirements
+
+- Node.js 18+
+- Terminal with Unicode support
+- WhatsApp account
+
+## Limitations
+
+- Built on whatsapp-web.js (unofficial)
+- Requires active WhatsApp Web session
+- Use at your own risk
+
+## Development
+
+## Commit Conventions
+
+This project uses [Conventional Commits](https://conventionalcommits.org/):
+
+```bash
+git commit -m "feat: add new feature"
+git commit -m "fix: resolve bug"
+git commit -m "docs: update readme"
+```
+
+## Release Process
+
+Automated via GitHub Actions when pushed to `main`.
+
+## License
+
+MIT - see [LICENSE](./LICENSE).
+
+---
+
+<a name="pt-br"></a>
+
+# TicTic ✓✓ - SDK para Node.js
 
 SDK para mensagens WhatsApp via HTTP API. Baseado em whatsapp-web.js.
 
@@ -134,164 +297,3 @@ Processo:
 - Baseado em whatsapp-web.js (não oficial)
 - Requer sessão ativa do WhatsApp Web
 - Use por sua conta e risco
-
----
-
-## English Documentation
-
-### WhatsApp messaging SDK for Node.js
-
-HTTP API for WhatsApp messages. Built on whatsapp-web.js.
-
-```bash
-npm install @tictic/sdk
-```
-
-### Quick Start
-
-#### 1. Get API key
-
-```javascript
-import TicTic from '@tictic/sdk';
-
-await TicTic.requestCode('5511999887766');
-const apiKey = await TicTic.verifyCode('5511999887766', '123456');
-```
-
-#### 2. Connect WhatsApp
-
-```javascript
-const tictic = new TicTic(apiKey);
-await tictic.connect(); // Shows QR code
-```
-
-#### 3. Send messages
-
-```javascript
-await tictic.sendText('5511999887766', 'Hello!');
-```
-
-### Complete Example
-
-```javascript
-import TicTic from '@tictic/sdk';
-
-async function main() {
-  const tictic = new TicTic(); // Uses TICTIC_API_KEY from env
-
-  // Connect if needed
-  if (!(await tictic.isReady())) {
-    await tictic.connect();
-  }
-
-  // Send message
-  const result = await tictic.sendText('5511999887766', 'Hello! ✓✓');
-  console.log('Message sent:', result);
-}
-
-main().catch(console.error);
-```
-
-### API Reference
-
-#### Authentication
-
-```javascript
-// Request verification code
-await TicTic.requestCode(phone);
-
-// Verify code and get API key
-const apiKey = await TicTic.verifyCode(phone, code);
-```
-
-#### Client Methods
-
-```javascript
-const tictic = new TicTic(apiKey?); // Uses TICTIC_API_KEY if not provided
-
-// Check if connected
-const ready = await tictic.isReady();
-
-// Get detailed status (for debugging)
-const status = await tictic.getStatus();
-// Returns: { ready: boolean, status: string, phone?: string, next_step?: string }
-
-// Connect to WhatsApp
-await tictic.connect();
-
-// Send text message
-const result = await tictic.sendText(to, text);
-
-// Check usage
-const { used, limit, remaining } = await tictic.getUsage();
-```
-
-### Environment Variables
-
-```bash
-TICTIC_API_KEY=tk_xxxxx       # Your API key
-TICTIC_API_URL=https://...    # API URL (optional)
-```
-
-### Error Handling
-
-```javascript
-try {
-  await tictic.sendText('5511999887766', 'Hello!');
-} catch (error) {
-  if (error.name === 'TicTicError') {
-    console.error(`Error ${error.code}: ${error.message}`);
-
-    if (error.help) {
-      console.error(`Help: ${error.help}`);
-    }
-  }
-}
-```
-
-### Setup Script
-
-Use the interactive setup script:
-
-```bash
-node examples/signup.js
-```
-
-Process:
-
-1. Request your phone number
-2. Send code via WhatsApp
-3. Generate your API key
-4. Show how to use it
-
-### Requirements
-
-- Node.js 18+
-- Terminal with Unicode support
-- WhatsApp account
-
-### Limitations
-
-- Built on whatsapp-web.js (unofficial)
-- Requires active WhatsApp Web session
-- Use at your own risk
-
-## Development
-
-### Commit Conventions
-
-This project uses [Conventional Commits](https://conventionalcommits.org/):
-
-```bash
-git commit -m "feat: add new feature"
-git commit -m "fix: resolve bug"
-git commit -m "docs: update readme"
-```
-
-### Release Process
-
-Automated via GitHub Actions when pushed to `main`.
-
-## License
-
-MIT
